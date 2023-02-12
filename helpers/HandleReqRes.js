@@ -1,6 +1,6 @@
 const url = require('url');
 const { StringDecoder } = require('string_decoder');
-const routes = require('../routes/routesHandler');
+const routes = require('../routes/routes');
 const { notFoundHandler } = require('../Handlers/RoutesHandlers/notFoundHandle');
 
 const handler = {};
@@ -36,8 +36,8 @@ handler.HandleReqRes2 = (req, res) => {
     req.on('data', (buffer) => {
         receivedData += decoder.write(buffer);
     });
-    req.on('end', (buffer) => {
-        receivedData += decoder.end(buffer);
+    req.on('end', () => {
+        receivedData += decoder.end();
         // console.log(receivedData);
         res.end(receivedData);
     });
