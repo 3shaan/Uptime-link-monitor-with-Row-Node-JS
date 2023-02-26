@@ -2,6 +2,7 @@ const url = require('url');
 const { StringDecoder } = require('string_decoder');
 const routes = require('../routes/routes');
 const { notFoundHandler } = require('../Handlers/RoutesHandlers/notFoundHandle');
+const { parseJSON } = require('../lib/utilities');
 
 const handler = {};
 
@@ -22,22 +23,24 @@ handler.HandleReqRes2 = (req, res) => {
         parseUrl,
         path,
     };
-
     const chosenHandler = routes[trimmedPath] ? routes[trimmedPath] : notFoundHandler;
-
-    chosenHandler(requestProperties, (statusCode, payload) => {
-        statusCode = typeof statusCode === 'number' ? statusCode : 500;
-        payload = typeof payload === 'object' ? payload : {};
-        const payloadString = JSON.stringify(payload);
-        res.writeHead(statusCode);
-        res.end(payloadString);
-    });
-
+    // res.setHeader('content-type', 'application/json');
     req.on('data', (buffer) => {
         receivedData += decoder.write(buffer);
     });
     req.on('end', () => {
         receivedData += decoder.end();
+   
+        requestProperties.body = parseJSON(receivedData);
+
+        chosenHandler(requestProperties, (statusCode, payload) => {
+            statusCode = typeof statusCode === 'number' ? statusCode : 500;
+            payload = typeof payload === 'object' ? payload : {};
+            const payloadString = JSON.stringify(payload);
+          
+            res.writeHead(statusCode);
+            res.end(payloadString);
+        });
         // console.log(receivedData);
         res.end(receivedData);
     });
